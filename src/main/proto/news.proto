@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package com.guildhub.news_service;
+
+option java_multiple_files = true;
+option java_package = "com.guildhub.newsservice.grpc";
+option java_outer_classname = "NewsProto";
+
+import "google/protobuf/timestamp.proto";
+
+message News {
+  int64 id = 1;
+  string title = 2;
+  string content = 3;
+  google.protobuf.Timestamp created_at = 4;
+  string author = 5;
+  string image_url = 6;
+  bool is_new = 7;
+}
+
+message GetLatestNewsRequest {
+  int32 limit = 1;
+}
+
+message GetLatestNewsResponse {
+  repeated News news = 1;
+}
+
+message GetAllNewsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message GetAllNewsResponse {
+  repeated News news = 1;
+  int32 total_count = 2;
+  bool has_more = 3;
+}
+
+service NewsService {
+  rpc GetLatestNews(GetLatestNewsRequest) returns (GetLatestNewsResponse);
+  rpc GetAllNews(GetAllNewsRequest) returns (GetAllNewsResponse);
+}
