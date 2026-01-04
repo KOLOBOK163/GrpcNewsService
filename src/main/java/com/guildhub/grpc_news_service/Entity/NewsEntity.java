@@ -33,6 +33,9 @@ public class NewsEntity {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
+    @Column(nullable = false)
+    private Instant updatedAt = Instant.now();
+
     @Column
     private Boolean isNew = true;
 }
