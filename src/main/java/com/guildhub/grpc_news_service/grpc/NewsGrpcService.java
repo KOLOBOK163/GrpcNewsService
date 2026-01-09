@@ -6,7 +6,6 @@ import com.guildhub.grpc_news_service.Repository.NewsRepository;
 import com.guildhub.newsservice.grpc.*;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import net.devh.boot.grpc.server.service.GrpcService;
 import org.springframework.data.domain.Page;
@@ -22,8 +21,11 @@ public class NewsGrpcService extends NewsServiceGrpc.NewsServiceImplBase {
 
     private final NewsRepository newsRepository;
 
-    public NewsGrpcService(NewsRepository newsRepository) {
+    private final MinioService minioService;
+
+    public NewsGrpcService(NewsRepository newsRepository, MinioService minioService) {
         this.newsRepository = newsRepository;
+        this.minioService = minioService;
     }
 
     @Override
@@ -46,7 +48,15 @@ public class NewsGrpcService extends NewsServiceGrpc.NewsServiceImplBase {
         news.setTitle(title);
         news.setContent(request.getContent());
         news.setAuthor(request.getAuthor());
-        news.setImageUrl(request.getImageUrl());
+        if(!request.getImageData().isEmpty())
+        {
+            String imageUrl = minioService.uploadImage(
+                    request.getImageData().toByteArray(),
+                    request.getImageContentType(),
+                    request.getImageFilename()
+            );
+            news.setImageUrl(imageUrl);
+        }
         news.setIsNew(request.getIsNew());
         news.setCreatedAt(Instant.now());
         news.setUpdatedAt(Instant.now());
@@ -141,7 +151,16 @@ public class NewsGrpcService extends NewsServiceGrpc.NewsServiceImplBase {
         news.setTitle(newTitle);
         news.setContent(request.getContent());
         news.setAuthor(request.getAuthor());
-        news.setImageUrl(request.getImageUrl());
+        if(!request.getImageData().isEmpty())
+        {
+            String newImageUrl = minioService.updateImage(
+                    news.getImageUrl(),
+                    request.getImageData().toByteArray(),
+                    request.getImageContentType(),
+                    request.getImageFilename()
+            );
+            news.setImageUrl(newImageUrl);
+        }
         news.setIsNew(request.getIsNew());
         news.setUpdatedAt(Instant.now());
 
@@ -159,13 +178,21 @@ public class NewsGrpcService extends NewsServiceGrpc.NewsServiceImplBase {
     @Override
     public void deleteNewsById(DeleteNewsByIdRequest request, StreamObserver<DeleteNewsByIdResponse> responseObserver) {
         Long id = request.getId();
-        if (!newsRepository.existsById(id)) {
+        NewsEntity news = newsRepository.findById(id)
+                .orElse(null);
+
+        if (news == null) {
             responseObserver.onError(
                     Status.NOT_FOUND
                             .withDescription("News not found with id: " + id)
                             .asRuntimeException()
             );
             return;
+        }
+
+        // Удаляем картинку из MinIO, если она есть
+        if (news.getImageUrl() != null && !news.getImageUrl().isEmpty()) {
+            minioService.deleteImage(news.getImageUrl());
         }
 
         newsRepository.deleteById(id);

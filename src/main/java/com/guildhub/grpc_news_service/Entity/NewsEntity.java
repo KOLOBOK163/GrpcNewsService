@@ -18,16 +18,16 @@ public class NewsEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 500)
     private String title;
 
     @Column(columnDefinition = "TEXT")
     private String content;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String author;
 
-    @Column
+    @Column(length = 1000)
     private String imageUrl;
 
     @Column(nullable = false)

@@ -24,7 +24,10 @@ message CreateNewsRequest {
   string content = 2;
   string author = 3;
   string image_url = 4;
-  bool is_new = 5;
+  bytes image_data = 5;
+  string image_filename = 6;
+  string image_content_type = 7;
+  bool is_new = 8;
 }
 
 message CreateNewsResponse {
@@ -64,7 +67,10 @@ message UpdateNewsByIdRequest {
   string content = 3;
   string author = 4;
   string image_url = 5;
-  bool is_new = 6;
+  bytes image_data = 6;
+  string image_filename = 7;
+  string image_content_type = 8;
+  bool is_new = 9;
 }
 
 message UpdateNewsByIdResponse {

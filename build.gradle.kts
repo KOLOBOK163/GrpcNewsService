@@ -21,9 +21,11 @@ repositories {
 
 val grpcVersion = "1.63.0"
 val protobufVersion = "3.25.3"
+val minIOVersion = "8.5.12"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("io.minio:minio:$minIOVersion")
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     implementation("io.grpc:grpc-netty-shaded:$grpcVersion")
